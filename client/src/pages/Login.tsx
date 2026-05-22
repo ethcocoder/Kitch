@@ -14,6 +14,33 @@ export function Login() {
   const [userType, setUserType] = useState<"owner" | "staff">("owner");
   const [language, setLanguage] = useState<Language>("en");
 
+  const redirectUser = async (userId: string) => {
+    try {
+      const userDoc = await getDoc(doc(db, "users", userId));
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+        
+        // Check approval status
+        if (userData.status !== "approved") {
+          window.location.href = "/approval-waiting";
+          return;
+        }
+
+        // Redirect based on role
+        if (userData.role === "admin") {
+          window.location.href = "/admin-dashboard";
+        } else {
+          window.location.href = "/user-dashboard";
+        }
+      } else {
+        window.location.href = "/";
+      }
+    } catch (error) {
+      console.error("Error redirecting user:", error);
+      window.location.href = "/";
+    }
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -30,13 +57,15 @@ export function Login() {
           email: user.email,
           displayName: user.displayName || "User",
           createdAt: new Date(),
-          role: userType,
+          role: "user",
           userType: userType,
+          status: "pending",
         });
+        window.location.href = "/approval-waiting";
+      } else {
+        toast.success(t("login_success", language));
+        await redirectUser(user.uid);
       }
-
-      toast.success(t("login_success", language));
-      window.location.href = "/";
     } catch (error: any) {
       toast.error(error.message || t("login_error", language));
     } finally {
@@ -59,14 +88,16 @@ export function Login() {
           displayName: user.displayName || "User",
           photoURL: user.photoURL || null,
           createdAt: new Date(),
-          role: userType,
+          role: "user",
           userType: userType,
+          status: "pending",
           authProvider: "google",
         });
+        window.location.href = "/approval-waiting";
+      } else {
+        toast.success(t("google_login_success", language));
+        await redirectUser(user.uid);
       }
-
-      toast.success(t("google_login_success", language));
-      window.location.href = "/";
     } catch (error: any) {
       toast.error(error.message || t("google_login_error", language));
     } finally {

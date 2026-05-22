@@ -1,10 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { createUserWithEmailAndPassword, updateProfile, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 import { auth, db } from "../lib/firebase";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { toast } from "sonner";
-import { doc, setDoc, getDoc } from "firebase/firestore";
+import { doc, setDoc, getDoc, collection, getDocs, query, where } from "firebase/firestore";
 import { t, type Language } from "../lib/translations";
 
 export function Signup() {
@@ -14,6 +14,18 @@ export function Signup() {
   const [loading, setLoading] = useState(false);
   const [userType, setUserType] = useState<"owner" | "staff">("owner");
   const [language, setLanguage] = useState<Language>("en");
+
+  // Check if this is the first user
+  const isFirstUser = async (): Promise<boolean> => {
+    try {
+      const usersRef = collection(db, "users");
+      const snapshot = await getDocs(usersRef);
+      return snapshot.empty;
+    } catch (error) {
+      console.error("Error checking if first user:", error);
+      return false;
+    }
+  };
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,17 +38,28 @@ export function Signup() {
       // Update profile with display name
       await updateProfile(user, { displayName });
 
+      // Check if this is the first user
+      const firstUser = await isFirstUser();
+
       // Create user document in Firestore
       await setDoc(doc(db, "users", user.uid), {
         email: user.email,
         displayName: displayName,
         createdAt: new Date(),
-        role: userType,
+        role: firstUser ? "admin" : "user",
         userType: userType,
+        status: firstUser ? "approved" : "pending",
+        approvedAt: firstUser ? new Date() : null,
+        approvedBy: firstUser ? "system" : null,
       });
 
-      toast.success(t("signup_success", language));
-      window.location.href = "/";
+      if (firstUser) {
+        toast.success(t("signup_success", language) + " - You are the Admin!");
+        window.location.href = "/admin-dashboard";
+      } else {
+        toast.success(t("signup_success", language) + " - Awaiting approval");
+        window.location.href = "/approval-waiting";
+      }
     } catch (error: any) {
       toast.error(error.message || t("signup_error", language));
     } finally {
@@ -51,22 +74,42 @@ export function Signup() {
       const userCredential = await signInWithPopup(auth, provider);
       const user = userCredential.user;
 
-      // Create user document in Firestore
+      // Check if user already exists
       const userDoc = await getDoc(doc(db, "users", user.uid));
       if (!userDoc.exists()) {
+        // Check if this is the first user
+        const firstUser = await isFirstUser();
+
+        // Create user document in Firestore
         await setDoc(doc(db, "users", user.uid), {
           email: user.email,
           displayName: user.displayName || "User",
           photoURL: user.photoURL || null,
           createdAt: new Date(),
-          role: userType,
+          role: firstUser ? "admin" : "user",
           userType: userType,
+          status: firstUser ? "approved" : "pending",
+          approvedAt: firstUser ? new Date() : null,
+          approvedBy: firstUser ? "system" : null,
           authProvider: "google",
         });
-      }
 
-      toast.success(t("google_signup_success", language));
-      window.location.href = "/";
+        if (firstUser) {
+          toast.success(t("google_signup_success", language) + " - You are the Admin!");
+          window.location.href = "/admin-dashboard";
+        } else {
+          toast.success(t("google_signup_success", language) + " - Awaiting approval");
+          window.location.href = "/approval-waiting";
+        }
+      } else {
+        // User already exists, redirect based on status
+        const userData = userDoc.data();
+        if (userData.status === "approved") {
+          window.location.href = userData.role === "admin" ? "/admin-dashboard" : "/user-dashboard";
+        } else {
+          window.location.href = "/approval-waiting";
+        }
+      }
     } catch (error: any) {
       toast.error(error.message || t("google_signup_error", language));
     } finally {

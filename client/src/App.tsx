@@ -8,8 +8,9 @@ import Home from "./pages/Home";
 import AdminDashboard from "./pages/AdminDashboard";
 import { Login } from "./pages/Login";
 import { Signup } from "./pages/Signup";
-import { Dashboard } from "./pages/Dashboard";
-import { Products } from "./pages/Products";
+import { AdminDashboardNew } from "./pages/AdminDashboardNew";
+import { UserDashboardNew } from "./pages/UserDashboardNew";
+import { ApprovalWaiting } from "./pages/ApprovalWaiting";
 import { AuthProvider } from "./context/AuthContext";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { useAuth } from "./_core/hooks/useAuth";
@@ -34,8 +35,10 @@ function Router() {
       <Route path={"/"} component={Home} />
       <Route path={"/login"} component={Login} />
       <Route path={"/signup"} component={Signup} />
-      <Route path={"/dashboard"} component={() => <ProtectedRoute><Dashboard /></ProtectedRoute>} />
-      <Route path={"/products"} component={Products} />
+      <Route path={"/approval-waiting"} component={ApprovalWaiting} />
+      <Route path={"/admin-dashboard"} component={AdminDashboardNew} />
+      <Route path={"/user-dashboard"} component={UserDashboardNew} />
+      <Route path={"/dashboard"} component={() => <ProtectedRoute><UserDashboardNew /></ProtectedRoute>} />
       <Route path={"/admin"} component={() => <ProtectedAdminRoute component={AdminDashboard} />} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
