@@ -23,7 +23,7 @@ const itemVariants = {
     y: 0,
     transition: {
       duration: 0.8,
-      ease: "easeOut",
+      type: "spring" as const,
     },
   },
 };
@@ -36,7 +36,7 @@ const morphVariants = {
     rotate: 0,
     transition: {
       duration: 1,
-      ease: "easeOut",
+      type: "spring" as const,
     },
   },
 };
@@ -46,13 +46,13 @@ export default function Home() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("hero");
 
-  const heroRef = useRef<HTMLDivElement>(null);
-  const featuresRef = useRef<HTMLDivElement>(null);
-  const howItWorksRef = useRef<HTMLDivElement>(null);
-  const testimonialsRef = useRef<HTMLDivElement>(null);
-  const ctaRef = useRef<HTMLDivElement>(null);
+  const heroRef = useRef<HTMLDivElement | null>(null);
+  const featuresRef = useRef<HTMLDivElement | null>(null);
+  const howItWorksRef = useRef<HTMLDivElement | null>(null);
+  const testimonialsRef = useRef<HTMLDivElement | null>(null);
+  const ctaRef = useRef<HTMLDivElement | null>(null);
 
-  const scrollToSection = (ref: React.RefObject<HTMLDivElement>, section: string) => {
+  const scrollToSection = (ref: React.RefObject<HTMLDivElement | null>, section: string) => {
     ref.current?.scrollIntoView({ behavior: "smooth" });
     setActiveSection(section);
     setMobileMenuOpen(false);
@@ -101,10 +101,10 @@ export default function Home() {
               </Button>
             ) : (
               <>
-                <Button variant="outline" onClick={() => (window.location.href = getLoginUrl())}>
+                <Button variant="outline" onClick={() => (window.location.href = '/login')}>
                   Login
                 </Button>
-                <Button className="bg-amber-500 hover:bg-amber-600">Get Started</Button>
+                <Button className="bg-amber-500 hover:bg-amber-600" onClick={() => (window.location.href = '/signup')}>Get Started</Button>
               </>
             )}
           </div>
@@ -185,7 +185,7 @@ export default function Home() {
                 size="lg"
                 variant="outline"
                 className="border-slate-600 text-white hover:bg-slate-800"
-                onClick={() => (window.location.href = getLoginUrl())}
+                onClick={() => (window.location.href = '/login')}
               >
                 Learn More
               </Button>
@@ -377,7 +377,7 @@ export default function Home() {
           <Button
             size="lg"
             className="bg-white text-amber-600 hover:bg-slate-100 font-semibold"
-            onClick={() => (window.location.href = getLoginUrl())}
+            onClick={() => (window.location.href = '/signup')}
           >
             Get Started Now
           </Button>

@@ -6,9 +6,15 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
 import AdminDashboard from "./pages/AdminDashboard";
+import { Login } from "./pages/Login";
+import { Signup } from "./pages/Signup";
+import { Dashboard } from "./pages/Dashboard";
+import { Products } from "./pages/Products";
+import { AuthProvider } from "./context/AuthContext";
+import { ProtectedRoute } from "./components/ProtectedRoute";
 import { useAuth } from "./_core/hooks/useAuth";
 
-function ProtectedRoute({ component: Component }: { component: React.ComponentType<any> }) {
+function ProtectedAdminRoute({ component: Component }: { component: React.ComponentType<any> }) {
   const { isAuthenticated, user, loading } = useAuth();
 
   if (loading) {
@@ -26,7 +32,11 @@ function Router() {
   return (
     <Switch>
       <Route path={"/"} component={Home} />
-      <Route path={"/admin"} component={() => <ProtectedRoute component={AdminDashboard} />} />
+      <Route path={"/login"} component={Login} />
+      <Route path={"/signup"} component={Signup} />
+      <Route path={"/dashboard"} component={() => <ProtectedRoute><Dashboard /></ProtectedRoute>} />
+      <Route path={"/products"} component={Products} />
+      <Route path={"/admin"} component={() => <ProtectedAdminRoute component={AdminDashboard} />} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />
@@ -37,12 +47,14 @@ function Router() {
 function App() {
   return (
     <ErrorBoundary>
-      <ThemeProvider defaultTheme="dark">
-        <TooltipProvider>
-          <Toaster />
-          <Router />
-        </TooltipProvider>
-      </ThemeProvider>
+      <AuthProvider>
+        <ThemeProvider defaultTheme="dark">
+          <TooltipProvider>
+            <Toaster />
+            <Router />
+          </TooltipProvider>
+        </ThemeProvider>
+      </AuthProvider>
     </ErrorBoundary>
   );
 }
