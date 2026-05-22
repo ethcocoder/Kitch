@@ -11,6 +11,7 @@ import { Signup } from "./pages/Signup";
 import { AdminDashboardNew } from "./pages/AdminDashboardNew";
 import { UserDashboardNew } from "./pages/UserDashboardNew";
 import { ApprovalWaiting } from "./pages/ApprovalWaiting";
+import { AdminPromotion } from "./pages/AdminPromotion";
 import { AuthProvider } from "./context/AuthContext";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { useAuth } from "./_core/hooks/useAuth";
@@ -36,6 +37,7 @@ function Router() {
       <Route path={"/login"} component={Login} />
       <Route path={"/signup"} component={Signup} />
       <Route path={"/approval-waiting"} component={ApprovalWaiting} />
+      <Route path={"/admin-promotion"} component={AdminPromotion} />
       <Route path={"/admin-dashboard"} component={AdminDashboardNew} />
       <Route path={"/user-dashboard"} component={UserDashboardNew} />
       <Route path={"/dashboard"} component={() => <ProtectedRoute><UserDashboardNew /></ProtectedRoute>} />

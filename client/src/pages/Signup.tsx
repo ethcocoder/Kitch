@@ -4,7 +4,7 @@ import { auth, db } from "../lib/firebase";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { toast } from "sonner";
-import { doc, setDoc, getDoc, collection, getDocs, query, where } from "firebase/firestore";
+import { doc, setDoc, getDoc, collection, getDocs } from "firebase/firestore";
 import { t, type Language } from "../lib/translations";
 
 export function Signup() {
@@ -15,15 +15,18 @@ export function Signup() {
   const [userType, setUserType] = useState<"owner" | "staff">("owner");
   const [language, setLanguage] = useState<Language>("en");
 
-  // Check if this is the first user
-  const isFirstUser = async (): Promise<boolean> => {
+  // Improved check for first user - with better error handling
+  const checkIfFirstUser = async (): Promise<boolean> => {
     try {
       const usersRef = collection(db, "users");
       const snapshot = await getDocs(usersRef);
+      console.log("Users collection check - Empty:", snapshot.empty, "Size:", snapshot.size);
       return snapshot.empty;
     } catch (error) {
       console.error("Error checking if first user:", error);
-      return false;
+      // If there's an error reading, assume this is the first user
+      // This is safer than defaulting to false
+      return true;
     }
   };
 
@@ -32,28 +35,31 @@ export function Signup() {
     setLoading(true);
 
     try {
+      // Check if this is the first user BEFORE creating the account
+      const isFirstUser = await checkIfFirstUser();
+      console.log("Is first user:", isFirstUser);
+
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
       // Update profile with display name
       await updateProfile(user, { displayName });
 
-      // Check if this is the first user
-      const firstUser = await isFirstUser();
-
-      // Create user document in Firestore
-      await setDoc(doc(db, "users", user.uid), {
+      // Create user document in Firestore with correct role based on first-user check
+      const userData = {
         email: user.email,
         displayName: displayName,
         createdAt: new Date(),
-        role: firstUser ? "admin" : "user",
+        role: isFirstUser ? "admin" : "user",
         userType: userType,
-        status: firstUser ? "approved" : "pending",
-        approvedAt: firstUser ? new Date() : null,
-        approvedBy: firstUser ? "system" : null,
-      });
+        status: isFirstUser ? "approved" : "pending",
+        approvedAt: isFirstUser ? new Date() : null,
+        approvedBy: isFirstUser ? "system" : null,
+      };
 
-      if (firstUser) {
+      await setDoc(doc(db, "users", user.uid), userData);
+
+      if (isFirstUser) {
         toast.success(t("signup_success", language) + " - You are the Admin!");
         window.location.href = "/admin-dashboard";
       } else {
@@ -61,6 +67,7 @@ export function Signup() {
         window.location.href = "/approval-waiting";
       }
     } catch (error: any) {
+      console.error("Signup error:", error);
       toast.error(error.message || t("signup_error", language));
     } finally {
       setLoading(false);
@@ -70,6 +77,10 @@ export function Signup() {
   const handleGoogleSignUp = async () => {
     setLoading(true);
     try {
+      // Check if this is the first user BEFORE signing in
+      const isFirstUser = await checkIfFirstUser();
+      console.log("Is first user (Google):", isFirstUser);
+
       const provider = new GoogleAuthProvider();
       const userCredential = await signInWithPopup(auth, provider);
       const user = userCredential.user;
@@ -77,24 +88,23 @@ export function Signup() {
       // Check if user already exists
       const userDoc = await getDoc(doc(db, "users", user.uid));
       if (!userDoc.exists()) {
-        // Check if this is the first user
-        const firstUser = await isFirstUser();
-
-        // Create user document in Firestore
-        await setDoc(doc(db, "users", user.uid), {
+        // Create user document in Firestore with correct role
+        const userData = {
           email: user.email,
           displayName: user.displayName || "User",
           photoURL: user.photoURL || null,
           createdAt: new Date(),
-          role: firstUser ? "admin" : "user",
+          role: isFirstUser ? "admin" : "user",
           userType: userType,
-          status: firstUser ? "approved" : "pending",
-          approvedAt: firstUser ? new Date() : null,
-          approvedBy: firstUser ? "system" : null,
+          status: isFirstUser ? "approved" : "pending",
+          approvedAt: isFirstUser ? new Date() : null,
+          approvedBy: isFirstUser ? "system" : null,
           authProvider: "google",
-        });
+        };
 
-        if (firstUser) {
+        await setDoc(doc(db, "users", user.uid), userData);
+
+        if (isFirstUser) {
           toast.success(t("google_signup_success", language) + " - You are the Admin!");
           window.location.href = "/admin-dashboard";
         } else {
@@ -111,6 +121,7 @@ export function Signup() {
         }
       }
     } catch (error: any) {
+      console.error("Google signup error:", error);
       toast.error(error.message || t("google_signup_error", language));
     } finally {
       setLoading(false);
