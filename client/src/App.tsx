@@ -13,6 +13,7 @@ import { AdminDashboardComplete } from "./pages/AdminDashboardComplete";
 import { UserDashboardNew } from "./pages/UserDashboardNew";
 import { ApprovalWaiting } from "./pages/ApprovalWaiting";
 import { AdminPromotion } from "./pages/AdminPromotion";
+import { AdminCleanup } from "./pages/AdminCleanup";
 import { AuthProvider } from "./context/AuthContext";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { useAuth } from "./_core/hooks/useAuth";
@@ -39,6 +40,7 @@ function Router() {
       <Route path={"/signup"} component={Signup} />
       <Route path={"/approval-waiting"} component={ApprovalWaiting} />
       <Route path={"/admin-promotion"} component={AdminPromotion} />
+      <Route path={"/admin-cleanup"} component={AdminCleanup} />
       <Route path={"/admin-dashboard"} component={AdminDashboardComplete} />
       <Route path={"/user-dashboard"} component={UserDashboardNew} />
       <Route path={"/dashboard"} component={() => <ProtectedRoute><UserDashboardNew /></ProtectedRoute>} />

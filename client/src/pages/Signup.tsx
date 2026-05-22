@@ -6,6 +6,7 @@ import { Input } from "../components/ui/input";
 import { toast } from "sonner";
 import { doc, setDoc, getDoc, collection, getDocs } from "firebase/firestore";
 import { t, type Language } from "../lib/translations";
+import { checkIfFirstUserStrict } from "../lib/strictAdminCheck";
 
 export function Signup() {
   const [email, setEmail] = useState("");
@@ -15,20 +16,8 @@ export function Signup() {
   const [userType, setUserType] = useState<"owner" | "staff">("owner");
   const [language, setLanguage] = useState<Language>("en");
 
-  // Improved check for first user - with better error handling
-  const checkIfFirstUser = async (): Promise<boolean> => {
-    try {
-      const usersRef = collection(db, "users");
-      const snapshot = await getDocs(usersRef);
-      console.log("Users collection check - Empty:", snapshot.empty, "Size:", snapshot.size);
-      return snapshot.empty;
-    } catch (error) {
-      console.error("Error checking if first user:", error);
-      // If there's an error reading, assume this is the first user
-      // This is safer than defaulting to false
-      return true;
-    }
-  };
+  // Use the strict admin check from the utility
+  const checkIfFirstUser = checkIfFirstUserStrict;
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
