@@ -4,6 +4,8 @@ import { doc, getDoc, collection, getDocs, updateDoc } from "firebase/firestore"
 import { db } from "../lib/firebase";
 import { AdminSidebar } from "../components/AdminSidebar";
 import { ProductManagement } from "../components/ProductManagement";
+import { OrderManagement } from "../components/OrderManagement";
+import { FinanceManagement } from "../components/FinanceManagement";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
@@ -288,6 +290,9 @@ export function AdminDashboardComplete() {
           {/* Products Tab */}
           {activeTab === "products" && <ProductManagement />}
 
+          {/* Orders Tab */}
+          {activeTab === "orders" && <OrderManagement />}
+
           {/* Users Tab */}
           {activeTab === "users" && (
             <div className="space-y-6">
@@ -430,44 +435,7 @@ export function AdminDashboardComplete() {
           )}
 
           {/* Finance Tab */}
-          {activeTab === "finance" && (
-            <div className="space-y-6">
-              <div>
-                <h2 className="text-3xl font-bold text-cyan-400">Finance Management</h2>
-                <p className="text-slate-400">Financial overview and reports</p>
-              </div>
-
-              <div className="grid md:grid-cols-2 gap-4">
-                <Card className="bg-slate-800 border-slate-700">
-                  <CardContent className="pt-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-slate-400 text-sm">Total Revenue</p>
-                        <p className="text-3xl font-bold text-green-400">
-                          {(stats.totalRevenue / 1000).toFixed(1)}K ETB
-                        </p>
-                      </div>
-                      <DollarSign className="w-12 h-12 text-green-400/30" />
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card className="bg-slate-800 border-slate-700">
-                  <CardContent className="pt-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-slate-400 text-sm">Total Expenses</p>
-                        <p className="text-3xl font-bold text-red-400">
-                          {(stats.totalRevenue * 0.3 / 1000).toFixed(1)}K ETB
-                        </p>
-                      </div>
-                      <DollarSign className="w-12 h-12 text-red-400/30" />
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </div>
-          )}
+          {activeTab === "finance" && <FinanceManagement />}
 
           {/* HR Tab */}
           {activeTab === "hr" && (

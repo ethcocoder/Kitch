@@ -37,6 +37,7 @@ export function AdminSidebar({ activeTab, onTabChange }: SidebarProps) {
   const menuItems = [
     { id: "dashboard", label: "🏠 Dashboard", icon: Home },
     { id: "products", label: "📦 Products", icon: ShoppingCart },
+    { id: "orders", label: "📋 Orders", icon: ShoppingCart },
     { id: "users", label: "👥 Users", icon: Users },
     { id: "analytics", label: "📊 Analytics", icon: BarChart3 },
     { id: "finance", label: "💰 Finance", icon: DollarSign },
