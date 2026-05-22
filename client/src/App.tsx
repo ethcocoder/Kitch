@@ -9,6 +9,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import { Login } from "./pages/Login";
 import { Signup } from "./pages/Signup";
 import { AdminDashboardNew } from "./pages/AdminDashboardNew";
+import { AdminDashboardComplete } from "./pages/AdminDashboardComplete";
 import { UserDashboardNew } from "./pages/UserDashboardNew";
 import { ApprovalWaiting } from "./pages/ApprovalWaiting";
 import { AdminPromotion } from "./pages/AdminPromotion";
@@ -38,7 +39,7 @@ function Router() {
       <Route path={"/signup"} component={Signup} />
       <Route path={"/approval-waiting"} component={ApprovalWaiting} />
       <Route path={"/admin-promotion"} component={AdminPromotion} />
-      <Route path={"/admin-dashboard"} component={AdminDashboardNew} />
+      <Route path={"/admin-dashboard"} component={AdminDashboardComplete} />
       <Route path={"/user-dashboard"} component={UserDashboardNew} />
       <Route path={"/dashboard"} component={() => <ProtectedRoute><UserDashboardNew /></ProtectedRoute>} />
       <Route path={"/admin"} component={() => <ProtectedAdminRoute component={AdminDashboard} />} />
