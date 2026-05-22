@@ -1,24 +1,23 @@
-import { integer, real, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
+import { pgTable, serial, text, integer, timestamp, boolean, doublePrecision, uniqueIndex } from "drizzle-orm/pg-core";
 
 /**
  * Core user table backing auth flow with role-based access control.
- * Columns use camelCase to match both database fields and generated types.
  */
-export const users = sqliteTable(
+export const users = pgTable(
   "users",
   {
-    id: integer("id").primaryKey({ autoIncrement: true }),
-    openId: text("openId").notNull().unique(),
+    id: serial("id").primaryKey(),
+    openId: text("open_id").notNull().unique(),
     name: text("name"),
     email: text("email"),
-    loginMethod: text("loginMethod"),
-    role: text("role", { enum: ["user", "admin"] }).default("user").notNull(),
-    createdAt: integer("createdAt", { mode: "timestamp_ms" }).notNull().default(new Date()),
-    updatedAt: integer("updatedAt", { mode: "timestamp_ms" }).notNull().default(new Date()),
-    lastSignedIn: integer("lastSignedIn", { mode: "timestamp_ms" }).notNull().default(new Date()),
+    loginMethod: text("login_method"),
+    role: text("role").default("user").notNull(), // "user" or "admin"
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at").notNull().defaultNow(),
+    lastSignedIn: timestamp("last_signed_in").notNull().defaultNow(),
   },
   (table) => ({
-    openIdIdx: uniqueIndex("users_openId_idx").on(table.openId),
+    openIdIdx: uniqueIndex("users_open_id_idx").on(table.openId),
   })
 );
 
@@ -27,22 +26,21 @@ export type InsertUser = typeof users.$inferInsert;
 
 /**
  * Products table for inventory and product management.
- * Stores kitchen equipment and materials from the PDF.
  */
-export const products = sqliteTable(
+export const products = pgTable(
   "products",
   {
-    id: integer("id").primaryKey({ autoIncrement: true }),
+    id: serial("id").primaryKey(),
     name: text("name").notNull(),
     description: text("description"),
-    category: text("category").notNull(), // e.g., "Kitchen Appliances", "Cookware", "Tools", "Dining & Serving", "Storage", "Cleaning & Safety"
-    price: real("price").notNull(),
+    category: text("category").notNull(),
+    price: doublePrecision("price").notNull(),
     stock: integer("stock").notNull().default(0),
-    imageUrl: text("imageUrl"),
+    imageUrl: text("image_url"),
     sku: text("sku").unique(),
-    featured: integer("featured", { mode: "boolean" }).default(false),
-    createdAt: integer("createdAt", { mode: "timestamp_ms" }).notNull().default(new Date()),
-    updatedAt: integer("updatedAt", { mode: "timestamp_ms" }).notNull().default(new Date()),
+    featured: boolean("featured").default(false),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at").notNull().defaultNow(),
   }
 );
 
@@ -51,111 +49,104 @@ export type InsertProduct = typeof products.$inferInsert;
 
 /**
  * Orders table for order management.
- * Tracks customer orders and order status.
  */
-export const orders = sqliteTable("orders", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  userId: integer("userId").notNull(),
-  orderNumber: text("orderNumber").notNull().unique(),
-  status: text("status", { enum: ["pending", "processing", "shipped", "delivered", "cancelled"] })
-    .default("pending")
-    .notNull(),
-  totalAmount: real("totalAmount").notNull(),
-  itemCount: integer("itemCount").notNull(),
-  shippingAddress: text("shippingAddress"),
+export const orders = pgTable("orders", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  orderNumber: text("order_number").notNull().unique(),
+  status: text("status").default("pending").notNull(), // "pending", "processing", etc.
+  totalAmount: doublePrecision("total_amount").notNull(),
+  itemCount: integer("item_count").notNull(),
+  shippingAddress: text("shipping_address"),
   notes: text("notes"),
-  createdAt: integer("createdAt", { mode: "timestamp_ms" }).notNull().default(new Date()),
-  updatedAt: integer("updatedAt", { mode: "timestamp_ms" }).notNull().default(new Date()),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
 export type Order = typeof orders.$inferSelect;
 export type InsertOrder = typeof orders.$inferInsert;
 
 /**
- * Order items table - tracks individual products in each order.
+ * Order items table.
  */
-export const orderItems = sqliteTable("orderItems", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  orderId: integer("orderId").notNull(),
-  productId: integer("productId").notNull(),
+export const orderItems = pgTable("order_items", {
+  id: serial("id").primaryKey(),
+  orderId: integer("order_id").notNull(),
+  productId: integer("product_id").notNull(),
   quantity: integer("quantity").notNull(),
-  price: real("price").notNull(),
-  createdAt: integer("createdAt", { mode: "timestamp_ms" }).notNull().default(new Date()),
+  price: doublePrecision("price").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
 export type OrderItem = typeof orderItems.$inferSelect;
 export type InsertOrderItem = typeof orderItems.$inferInsert;
 
 /**
- * CMS Content table for managing landing page content.
- * Stores hero text, features, and other editable content.
+ * CMS Content table.
  */
-export const cmsContent = sqliteTable("cmsContent", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  key: text("key").notNull().unique(), // e.g., "hero_title", "hero_subtitle", "features_section_title"
+export const cmsContent = pgTable("cms_content", {
+  id: serial("id").primaryKey(),
+  key: text("key").notNull().unique(),
   title: text("title"),
-  content: text("content"), // Rich text or JSON
-  imageUrl: text("imageUrl"),
+  content: text("content"),
+  imageUrl: text("image_url"),
   order: integer("order").default(0),
-  published: integer("published", { mode: "boolean" }).default(true),
-  createdAt: integer("createdAt", { mode: "timestamp_ms" }).notNull().default(new Date()),
-  updatedAt: integer("updatedAt", { mode: "timestamp_ms" }).notNull().default(new Date()),
+  published: boolean("published").default(true),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
 export type CMSContent = typeof cmsContent.$inferSelect;
 export type InsertCMSContent = typeof cmsContent.$inferInsert;
 
 /**
- * Testimonials table for managing customer testimonials.
- * Displayed on the landing page.
+ * Testimonials table.
  */
-export const testimonials = sqliteTable("testimonials", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  authorName: text("authorName").notNull(),
-  authorTitle: text("authorTitle"),
-  authorImage: text("authorImage"),
+export const testimonials = pgTable("testimonials", {
+  id: serial("id").primaryKey(),
+  authorName: text("author_name").notNull(),
+  authorTitle: text("author_title"),
+  authorImage: text("author_image"),
   content: text("content").notNull(),
-  rating: integer("rating").default(5), // 1-5 star rating
-  published: integer("published", { mode: "boolean" }).default(true),
+  rating: integer("rating").default(5),
+  published: boolean("published").default(true),
   order: integer("order").default(0),
-  createdAt: integer("createdAt", { mode: "timestamp_ms" }).notNull().default(new Date()),
-  updatedAt: integer("updatedAt", { mode: "timestamp_ms" }).notNull().default(new Date()),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
 export type Testimonial = typeof testimonials.$inferSelect;
 export type InsertTestimonial = typeof testimonials.$inferInsert;
 
 /**
- * Analytics table for tracking user interactions and page views.
- * Used for the admin dashboard analytics module.
+ * Analytics table.
  */
-export const analytics = sqliteTable("analytics", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  eventType: text("eventType").notNull(), // e.g., "page_view", "product_view", "order_created", "user_signup"
-  userId: integer("userId"),
-  productId: integer("productId"),
-  orderId: integer("orderId"),
-  metadata: text("metadata"), // JSON for additional data
-  createdAt: integer("createdAt", { mode: "timestamp_ms" }).notNull().default(new Date()),
+export const analytics = pgTable("analytics", {
+  id: serial("id").primaryKey(),
+  eventType: text("event_type").notNull(),
+  userId: integer("user_id"),
+  productId: integer("product_id"),
+  orderId: integer("order_id"),
+  metadata: text("metadata"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
 export type Analytics = typeof analytics.$inferSelect;
 export type InsertAnalytics = typeof analytics.$inferInsert;
 
 /**
- * Features table for managing landing page features.
- * Each feature has a title, description, icon, and display order.
+ * Features table.
  */
-export const features = sqliteTable("features", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+export const features = pgTable("features", {
+  id: serial("id").primaryKey(),
   title: text("title").notNull(),
   description: text("description"),
-  icon: text("icon"), // Icon name or SVG
-  imageUrl: text("imageUrl"),
+  icon: text("icon"),
+  imageUrl: text("image_url"),
   order: integer("order").default(0),
-  published: integer("published", { mode: "boolean" }).default(true),
-  createdAt: integer("createdAt", { mode: "timestamp_ms" }).notNull().default(new Date()),
-  updatedAt: integer("updatedAt", { mode: "timestamp_ms" }).notNull().default(new Date()),
+  published: boolean("published").default(true),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
 export type Feature = typeof features.$inferSelect;

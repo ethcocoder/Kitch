@@ -1,19 +1,24 @@
 import { eq } from "drizzle-orm";
-import { drizzle } from "drizzle-orm/better-sqlite3";
-import Database from "better-sqlite3";
-import path from "path";
+import { drizzle } from "drizzle-orm/node-postgres";
+import pg from "pg";
+const { Pool } = pg;
 import { InsertUser, users, products, orders, orderItems, cmsContent, testimonials, features, analytics } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
 
-// Lazily create the drizzle instance so local tooling can run without a DB.
 export async function getDb() {
   if (!_db) {
     try {
-      const dbPath = process.env.DATABASE_URL || path.join(process.cwd(), "kitch.db");
-      const sqlite = new Database(dbPath);
-      _db = drizzle(sqlite);
+      const connectionString = process.env.DATABASE_URL;
+      if (!connectionString) {
+        throw new Error("DATABASE_URL is not set");
+      }
+      const pool = new Pool({
+        connectionString,
+        ssl: connectionString.includes("localhost") ? false : { rejectUnauthorized: false },
+      });
+      _db = drizzle(pool);
     } catch (error) {
       console.warn("[Database] Failed to connect:", error);
       _db = null;
