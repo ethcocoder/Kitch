@@ -5,6 +5,7 @@ import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { toast } from "sonner";
 import { doc, setDoc, getDoc } from "firebase/firestore";
+import { t, type Language } from "../lib/translations";
 
 export function Signup() {
   const [email, setEmail] = useState("");
@@ -12,7 +13,7 @@ export function Signup() {
   const [displayName, setDisplayName] = useState("");
   const [loading, setLoading] = useState(false);
   const [userType, setUserType] = useState<"owner" | "staff">("owner");
-  const [language, setLanguage] = useState<"amharic" | "english">("english");
+  const [language, setLanguage] = useState<Language>("en");
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,10 +35,10 @@ export function Signup() {
         userType: userType,
       });
 
-      toast.success(language === "english" ? "Account created successfully!" : "መለያ በተሳካ ሁኔታ ተፈጠረ!");
+      toast.success(t("signup_success", language));
       window.location.href = "/";
     } catch (error: any) {
-      toast.error(error.message || (language === "english" ? "Failed to create account" : "መለያ መፍጠር ወደ ውስጥ ገባ"));
+      toast.error(error.message || t("signup_error", language));
     } finally {
       setLoading(false);
     }
@@ -64,17 +65,17 @@ export function Signup() {
         });
       }
 
-      toast.success(language === "english" ? "Account created with Google!" : "መለያ ከ Google ጋር ተፈጠረ!");
+      toast.success(t("google_signup_success", language));
       window.location.href = "/";
     } catch (error: any) {
-      toast.error(error.message || (language === "english" ? "Failed to sign up with Google" : "ከ Google ጋር ምዝገባ ወደ ውስጥ ገባ"));
+      toast.error(error.message || t("google_signup_error", language));
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-900 to-slate-950 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-900 to-slate-950 flex items-center justify-center p-4" dir={language === "am" ? "rtl" : "ltr"}>
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-8">
@@ -90,24 +91,24 @@ export function Signup() {
         {/* Language Selection */}
         <div className="grid grid-cols-2 gap-3 mb-6">
           <button
-            onClick={() => setLanguage("amharic")}
+            onClick={() => setLanguage("am")}
             className={`py-3 px-4 rounded-lg font-semibold transition-all ${
-              language === "amharic"
+              language === "am"
                 ? "bg-cyan-500 text-white border-2 border-cyan-400"
                 : "bg-slate-800 text-slate-300 border-2 border-slate-700 hover:border-slate-600"
             }`}
           >
-            አማርኛ
+            {t("amharic", "am")}
           </button>
           <button
-            onClick={() => setLanguage("english")}
+            onClick={() => setLanguage("en")}
             className={`py-3 px-4 rounded-lg font-semibold transition-all ${
-              language === "english"
+              language === "en"
                 ? "bg-cyan-500 text-white border-2 border-cyan-400"
                 : "bg-slate-800 text-slate-300 border-2 border-slate-700 hover:border-slate-600"
             }`}
           >
-            English
+            {t("english", "en")}
           </button>
         </div>
 
@@ -122,7 +123,7 @@ export function Signup() {
             }`}
           >
             <span>👤</span>
-            <span>{language === "english" ? "Owner" : "ባለቤት"}</span>
+            <span>{t("owner", language)}</span>
           </button>
           <button
             onClick={() => setUserType("staff")}
@@ -133,7 +134,7 @@ export function Signup() {
             }`}
           >
             <span>👥</span>
-            <span>{language === "english" ? "Staff" : "ሠራተኛ"}</span>
+            <span>{t("staff", language)}</span>
           </button>
         </div>
 
@@ -141,11 +142,11 @@ export function Signup() {
         <form onSubmit={handleSignup} className="space-y-4 mb-6">
           <div>
             <label className="block text-slate-300 text-sm font-medium mb-2">
-              {language === "english" ? "Full Name" : "ሙሉ ስም"}
+              {t("full_name", language)}
             </label>
             <Input
               type="text"
-              placeholder={language === "english" ? "John Doe" : "ሙሉ ስም"}
+              placeholder={t("full_name", language)}
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
               required
@@ -155,11 +156,11 @@ export function Signup() {
 
           <div>
             <label className="block text-slate-300 text-sm font-medium mb-2">
-              {language === "english" ? "Email" : "ኢሜል"}
+              {t("email", language)}
             </label>
             <Input
               type="email"
-              placeholder={language === "english" ? "you@example.com" : "ኢሜል"}
+              placeholder={t("email", language)}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -169,7 +170,7 @@ export function Signup() {
 
           <div>
             <label className="block text-slate-300 text-sm font-medium mb-2">
-              {language === "english" ? "Password" : "ሚስጥር"}
+              {t("password", language)}
             </label>
             <Input
               type="password"
@@ -186,14 +187,14 @@ export function Signup() {
             disabled={loading}
             className="w-full bg-gradient-to-r from-cyan-400 to-blue-500 text-white font-bold py-3 rounded-lg hover:from-cyan-500 hover:to-blue-600 transition-all shadow-lg"
           >
-            {loading ? (language === "english" ? "Creating account..." : "መለያ ይፈጠራል...") : language === "english" ? "Sign Up" : "ይመዝገቡ"}
+            {loading ? t("signing_up", language) : t("sign_up", language)}
           </Button>
         </form>
 
         {/* Divider */}
         <div className="flex items-center gap-4 mb-6">
           <div className="flex-1 h-px bg-slate-700"></div>
-          <span className="text-slate-400 text-sm">{language === "english" ? "OR" : "ወይም"}</span>
+          <span className="text-slate-400 text-sm">{t("or", language)}</span>
           <div className="flex-1 h-px bg-slate-700"></div>
         </div>
 
@@ -209,15 +210,15 @@ export function Signup() {
             <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
             <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
           </svg>
-          {language === "english" ? "Sign up with Google" : "ከ Google ጋር ይመዝገቡ"}
+          {t("sign_up_google", language)}
         </button>
 
         {/* Sign In Link */}
         <div className="text-center">
           <p className="text-slate-400 text-sm">
-            {language === "english" ? "Already have an account? " : "መለያ አለዎት? "}
+            {t("have_account", language)}{" "}
             <a href="/login" className="text-cyan-400 hover:text-cyan-300 font-semibold">
-              {language === "english" ? "Sign in" : "ወደ ውስጥ ገባ"}
+              {t("sign_in_link", language)}
             </a>
           </p>
         </div>
