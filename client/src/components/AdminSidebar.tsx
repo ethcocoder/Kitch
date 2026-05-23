@@ -68,7 +68,7 @@ export function AdminSidebar({ activeTab, onTabChange }: SidebarProps) {
       >
         {/* Header */}
         <div className="p-6 border-b border-slate-800">
-          <h1 className="text-2xl font-bold text-cyan-400">Eyob Store</h1>
+          <h1 className="text-2xl font-bold text-cyan-400">Kitch</h1>
           <p className="text-slate-400 text-sm">Admin Panel</p>
         </div>
 

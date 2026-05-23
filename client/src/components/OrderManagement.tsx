@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, where } from "firebase/firestore";
+import { collection, addDoc, updateDoc, deleteDoc, doc, query, where, onSnapshot } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -47,25 +47,28 @@ export function OrderManagement() {
   const [newItem, setNewItem] = useState({ productName: "", quantity: 1, unitPrice: 0 });
 
   useEffect(() => {
-    fetchOrders();
-  }, []);
-
-  const fetchOrders = async () => {
-    try {
-      const ordersRef = collection(db, "orders");
-      const snapshot = await getDocs(ordersRef);
+    setLoading(true);
+    const ordersRef = collection(db, "orders");
+    
+    const unsubscribe = onSnapshot(ordersRef, (snapshot) => {
       const ordersList = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       })) as Order[];
-      setOrders(ordersList.sort((a, b) => new Date(b.orderDate).getTime() - new Date(a.orderDate).getTime()));
-    } catch (error) {
+      setOrders(ordersList.sort((a, b) => {
+        const dateA = a.orderDate?.toDate?.() || new Date(a.orderDate);
+        const dateB = b.orderDate?.toDate?.() || new Date(b.orderDate);
+        return dateB.getTime() - dateA.getTime();
+      }));
+      setLoading(false);
+    }, (error) => {
       console.error("Error fetching orders:", error);
       setOrders([]);
-    } finally {
       setLoading(false);
-    }
-  };
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   const handleAddItem = () => {
     if (!newItem.productName || newItem.quantity <= 0 || newItem.unitPrice <= 0) {
@@ -141,7 +144,6 @@ export function OrderManagement() {
       });
       setEditingId(null);
       setShowForm(false);
-      fetchOrders();
     } catch (error) {
       console.error("Error saving order:", error);
       toast.error("Failed to save order");
@@ -160,7 +162,6 @@ export function OrderManagement() {
     try {
       await deleteDoc(doc(db, "orders", id));
       toast.success("Order deleted successfully");
-      fetchOrders();
     } catch (error) {
       console.error("Error deleting order:", error);
       toast.error("Failed to delete order");
@@ -175,7 +176,6 @@ export function OrderManagement() {
       }
       await updateDoc(doc(db, "orders", id), updateData);
       toast.success("Order status updated");
-      fetchOrders();
     } catch (error) {
       toast.error("Failed to update order status");
     }
@@ -185,7 +185,6 @@ export function OrderManagement() {
     try {
       await updateDoc(doc(db, "orders", id), { paymentStatus: newPaymentStatus });
       toast.success("Payment status updated");
-      fetchOrders();
     } catch (error) {
       toast.error("Failed to update payment status");
     }

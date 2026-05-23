@@ -115,7 +115,7 @@ export function Login() {
               <span className="text-cyan-400 text-2xl">≡</span>
             </div>
           </div>
-          <h1 className="text-3xl font-bold text-cyan-400 mb-2">Eyob Store</h1>
+          <h1 className="text-3xl font-bold text-cyan-400 mb-2">Kitch</h1>
           <p className="text-cyan-300 text-sm">Home & Kitchen Supplies</p>
         </div>
 
@@ -240,15 +240,7 @@ export function Login() {
           </p>
         </div>
 
-        {/* Demo Credentials */}
-        <div className="mt-8 pt-6 border-t border-slate-700">
-          <p className="text-slate-500 text-xs text-center">
-            {t("demo_credentials", language)}
-          </p>
-          <p className="text-slate-500 text-xs text-center mt-1">
-            {t("demo_text", language)}
-          </p>
-        </div>
+
       </div>
     </div>
   );

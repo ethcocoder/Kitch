@@ -71,6 +71,12 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // Daily Sales collection - read and write by admin
+    match /daily_sales/{saleId} {
+      allow read: if isAdmin();
+      allow write: if isAdmin();
+    }
+
     // Catch-all for any other collections - deny by default
     match /{document=**} {
       allow read, write: if false;

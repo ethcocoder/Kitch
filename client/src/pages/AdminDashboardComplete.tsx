@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
-import { doc, getDoc, collection, getDocs, updateDoc } from "firebase/firestore";
+import { doc, getDoc, collection, updateDoc, onSnapshot } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { AdminSidebar } from "../components/AdminSidebar";
 import { ProductManagement } from "../components/ProductManagement";
@@ -42,59 +42,62 @@ export function AdminDashboardComplete() {
   const [showEmployeeForm, setShowEmployeeForm] = useState(false);
 
   useEffect(() => {
-    const checkAdminAndFetchData = async () => {
-      if (user?.uid) {
-        try {
-          // Check if user is admin
-          const userDoc = await getDoc(doc(db, "users", user.uid));
-          if (!userDoc.exists() || userDoc.data().role !== "admin") {
-            window.location.href = "/user-dashboard";
-            return;
-          }
+    if (!user?.uid) return;
 
-          // Fetch all data
-          const usersRef = collection(db, "users");
-          const usersSnapshot = await getDocs(usersRef);
-          const allUsers = usersSnapshot.docs.map((doc) => ({
-            id: doc.id,
-            ...doc.data(),
-          }));
-
-          const pending = allUsers.filter((u: any) => u.status === "pending");
-          const approved = allUsers.filter((u: any) => u.status === "approved");
-
-          setPendingUsers(pending);
-          setApprovedUsers(approved);
-
-          // Fetch products
-          const productsRef = collection(db, "products");
-          const productsSnapshot = await getDocs(productsRef);
-
-          setStats({
-            totalUsers: allUsers.length,
-            pendingApprovals: pending.length,
-            totalRevenue: Math.floor(Math.random() * 100000) + 50000,
-            activeEmployees: approved.filter((u: any) => u.role === "user").length,
-            totalProducts: productsSnapshot.size,
-          });
-        } catch (error) {
-          console.error("Error fetching data:", error);
-          setStats({
-            totalUsers: 0,
-            pendingApprovals: 0,
-            totalRevenue: 0,
-            activeEmployees: 0,
-            totalProducts: 0,
-          });
-          setPendingUsers([]);
-          setApprovedUsers([]);
-        } finally {
-          setLoading(false);
-        }
+    setLoading(true);
+    
+    // Check admin status first
+    getDoc(doc(db, "users", user.uid)).then((userDoc) => {
+      if (!userDoc.exists() || userDoc.data().role !== "admin") {
+        window.location.href = "/user-dashboard";
+        return;
       }
-    };
 
-    checkAdminAndFetchData();
+      // Real-time users
+      const unsubscribeUsers = onSnapshot(collection(db, "users"), (snapshot) => {
+        const allUsers = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const pending = allUsers.filter((u: any) => u.status === "pending");
+        const approved = allUsers.filter((u: any) => u.status === "approved");
+        
+        setPendingUsers(pending);
+        setApprovedUsers(approved);
+        
+        setStats(prev => ({
+          ...prev,
+          totalUsers: allUsers.length,
+          pendingApprovals: pending.length,
+          activeEmployees: approved.filter((u: any) => u.role === "user").length,
+        }));
+      });
+
+      // Real-time products
+      const unsubscribeProducts = onSnapshot(collection(db, "products"), (snapshot) => {
+        setStats(prev => ({
+          ...prev,
+          totalProducts: snapshot.size,
+        }));
+      });
+
+      // Real-time sales for revenue
+      const unsubscribeSales = onSnapshot(collection(db, "daily_sales"), (snapshot) => {
+        const totalRevenue = snapshot.docs.reduce((sum, doc) => sum + (doc.data().totalAmount || 0), 0);
+        setStats(prev => ({
+          ...prev,
+          totalRevenue,
+        }));
+      });
+
+      setLoading(false);
+
+      return () => {
+        unsubscribeUsers();
+        unsubscribeProducts();
+        unsubscribeSales();
+      };
+    }).catch(error => {
+      console.error("Error checking admin status:", error);
+      setLoading(false);
+    });
   }, [user]);
 
   const handleApproveUser = async (userId: string, userName: string) => {
@@ -105,7 +108,6 @@ export function AdminDashboardComplete() {
         approvedBy: user?.uid,
       });
       toast.success(`${userName} has been approved!`);
-      window.location.reload();
     } catch (error) {
       toast.error("Error approving user");
     }
@@ -119,7 +121,6 @@ export function AdminDashboardComplete() {
         rejectedBy: user?.uid,
       });
       toast.success(`${userName} has been rejected!`);
-      window.location.reload();
     } catch (error) {
       toast.error("Error rejecting user");
     }
@@ -364,8 +365,7 @@ export function AdminDashboardComplete() {
             </div>
           )}
 
-          {/* Finance Tab */}
-          {activeTab === "finance" && <FinanceManagement />}
+
 
           {/* HR Tab */}
           {activeTab === "hr" && (
@@ -556,7 +556,7 @@ export function AdminDashboardComplete() {
                     </label>
                     <Input
                       type="text"
-                      defaultValue="Eyob Store"
+                      defaultValue="Kitch"
                       className="bg-slate-600 border-slate-500 text-white"
                     />
                   </div>

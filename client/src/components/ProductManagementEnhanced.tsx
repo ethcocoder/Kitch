@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc } from "firebase/firestore";
+import { collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -40,25 +40,24 @@ export function ProductManagementEnhanced() {
   });
 
   useEffect(() => {
-    fetchProducts();
-  }, []);
-
-  const fetchProducts = async () => {
-    try {
-      const productsRef = collection(db, "products");
-      const snapshot = await getDocs(productsRef);
+    setLoading(true);
+    const productsRef = collection(db, "products");
+    
+    const unsubscribe = onSnapshot(productsRef, (snapshot) => {
       const productsList = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       })) as Product[];
       setProducts(productsList);
-    } catch (error) {
+      setLoading(false);
+    }, (error) => {
       console.error("Error fetching products:", error);
       setProducts([]);
-    } finally {
       setLoading(false);
-    }
-  };
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -100,7 +99,6 @@ export function ProductManagementEnhanced() {
       });
       setEditingId(null);
       setShowForm(false);
-      fetchProducts();
     } catch (error) {
       console.error("Error saving product:", error);
       toast.error("Failed to save product");
@@ -119,7 +117,6 @@ export function ProductManagementEnhanced() {
     try {
       await deleteDoc(doc(db, "products", id));
       toast.success("Product deleted successfully");
-      fetchProducts();
     } catch (error) {
       console.error("Error deleting product:", error);
       toast.error("Failed to delete product");

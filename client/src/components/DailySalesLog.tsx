@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, where } from "firebase/firestore";
+import { collection, addDoc, updateDoc, deleteDoc, doc, query, where, onSnapshot } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -55,14 +55,11 @@ export function DailySalesLog() {
   });
 
   useEffect(() => {
-    fetchDailySales();
-  }, [selectedDate]);
-
-  const fetchDailySales = async () => {
-    try {
-      const salesRef = collection(db, "daily_sales");
-      const q = query(salesRef, where("saleDate", "==", selectedDate));
-      const snapshot = await getDocs(q);
+    const salesRef = collection(db, "daily_sales");
+    const q = query(salesRef, where("saleDate", "==", selectedDate));
+    
+    setLoading(true);
+    const unsubscribe = onSnapshot(q, (snapshot) => {
       const salesList = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
@@ -81,13 +78,15 @@ export function DailySalesLog() {
       };
 
       setDailyStats(stats);
-    } catch (error) {
+      setLoading(false);
+    }, (error) => {
       console.error("Error fetching daily sales:", error);
       setSales([]);
-    } finally {
       setLoading(false);
-    }
-  };
+    });
+
+    return () => unsubscribe();
+  }, [selectedDate]);
 
   const handleAddSale = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -125,7 +124,6 @@ export function DailySalesLog() {
         notes: "",
       });
       setShowForm(false);
-      fetchDailySales();
     } catch (error) {
       console.error("Error adding sale:", error);
       toast.error("Failed to record sale");
@@ -138,7 +136,6 @@ export function DailySalesLog() {
     try {
       await deleteDoc(doc(db, "daily_sales", id));
       toast.success("Sale deleted successfully");
-      fetchDailySales();
     } catch (error) {
       console.error("Error deleting sale:", error);
       toast.error("Failed to delete sale");

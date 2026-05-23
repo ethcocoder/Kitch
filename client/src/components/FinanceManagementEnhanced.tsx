@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { collection, getDocs, query, where } from "firebase/firestore";
+import { collection, query, where, onSnapshot } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
@@ -46,14 +46,10 @@ export function FinanceManagementEnhanced() {
   const [expenseForm, setExpenseForm] = useState({ description: "", amount: 0, category: "" });
 
   useEffect(() => {
-    fetchFinanceData();
-  }, [selectedMonth]);
-
-  const fetchFinanceData = async () => {
-    try {
-      // Fetch all daily sales for the selected month
-      const salesRef = collection(db, "daily_sales");
-      const snapshot = await getDocs(salesRef);
+    setLoading(true);
+    const salesRef = collection(db, "daily_sales");
+    
+    const unsubscribe = onSnapshot(salesRef, (snapshot) => {
       const sales = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
@@ -61,7 +57,7 @@ export function FinanceManagementEnhanced() {
 
       // Filter sales for selected month
       const monthSales = sales.filter((sale) => {
-        const saleMonth = sale.saleDate?.substring(0, 7) || new Date(sale.saleTime?.toDate?.() || sale.saleTime).toISOString().substring(0, 7);
+        const saleMonth = sale.saleDate?.substring(0, 7) || (sale.saleTime ? new Date(sale.saleTime?.toDate?.() || sale.saleTime).toISOString().substring(0, 7) : "");
         return saleMonth === selectedMonth;
       });
 
@@ -70,14 +66,17 @@ export function FinanceManagementEnhanced() {
       const totalCost = monthSales.reduce((sum, s) => sum + (s.totalCost || 0), 0);
       const netProfit = totalRevenue - totalCost;
 
-      // Mock expenses (in real app, fetch from database)
-      const totalExpenses = 50000;
+      // In a real app, expenses would be fetched from an 'expenses' collection
+      // For now, we use the totalCost from sales as the base for expenses
+      const totalExpenses = totalCost;
 
       // Calculate monthly breakdown
       const monthlyData: { [key: string]: number } = {};
       sales.forEach((sale) => {
-        const month = sale.saleDate?.substring(0, 7) || new Date(sale.saleTime?.toDate?.() || sale.saleTime).toISOString().substring(0, 7);
-        monthlyData[month] = (monthlyData[month] || 0) + (sale.totalAmount || 0);
+        const month = sale.saleDate?.substring(0, 7) || (sale.saleTime ? new Date(sale.saleTime?.toDate?.() || sale.saleTime).toISOString().substring(0, 7) : "");
+        if (month) {
+          monthlyData[month] = (monthlyData[month] || 0) + (sale.totalAmount || 0);
+        }
       });
 
       const monthlyRevenue = Object.entries(monthlyData)
@@ -85,12 +84,13 @@ export function FinanceManagementEnhanced() {
         .sort((a, b) => a.month.localeCompare(b.month))
         .slice(-12);
 
-      // Mock category revenue
-      const categoryRevenue = [
-        { category: "Kitchen", amount: totalRevenue * 0.4 },
-        { category: "Bedroom", amount: totalRevenue * 0.3 },
-        { category: "Living Room", amount: totalRevenue * 0.3 },
-      ];
+      // Category revenue based on actual data
+      const catData: { [key: string]: number } = {};
+      monthSales.forEach((sale) => {
+        const cat = sale.category || "General";
+        catData[cat] = (catData[cat] || 0) + (sale.totalAmount || 0);
+      });
+      const categoryRevenue = Object.entries(catData).map(([category, amount]) => ({ category, amount }));
 
       setFinanceData({
         totalRevenue,
@@ -110,18 +110,16 @@ export function FinanceManagementEnhanced() {
         },
       });
 
-      // Mock expenses
-      setExpenses([
-        { id: 1, description: "Rent", amount: 15000, category: "Rent", date: new Date() },
-        { id: 2, description: "Utilities", amount: 5000, category: "Utilities", date: new Date() },
-        { id: 3, description: "Staff Salary", amount: 30000, category: "Payroll", date: new Date() },
-      ]);
-    } catch (error) {
-      console.error("Error fetching finance data:", error);
-    } finally {
+      // No expenses collection yet, so we'll show an empty list or actual cost breakdown if available
+      setExpenses([]);
       setLoading(false);
-    }
-  };
+    }, (error) => {
+      console.error("Error fetching finance data:", error);
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, [selectedMonth]);
 
   const handleExportMonthlyPDF = () => {
     const report = {

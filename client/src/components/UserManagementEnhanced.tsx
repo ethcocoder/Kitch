@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, where } from "firebase/firestore";
+import { collection, addDoc, updateDoc, deleteDoc, doc, query, where, onSnapshot } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -31,25 +31,24 @@ export function UserManagementEnhanced() {
   });
 
   useEffect(() => {
-    fetchUsers();
-  }, []);
-
-  const fetchUsers = async () => {
-    try {
-      const usersRef = collection(db, "users");
-      const snapshot = await getDocs(usersRef);
+    setLoading(true);
+    const usersRef = collection(db, "users");
+    
+    const unsubscribe = onSnapshot(usersRef, (snapshot) => {
       const usersList = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       })) as User[];
       setUsers(usersList);
-    } catch (error) {
+      setLoading(false);
+    }, (error) => {
       console.error("Error fetching users:", error);
       toast.error("Failed to fetch users");
-    } finally {
       setLoading(false);
-    }
-  };
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -75,7 +74,6 @@ export function UserManagementEnhanced() {
       }
 
       resetForm();
-      fetchUsers();
     } catch (error) {
       console.error("Error saving user:", error);
       toast.error("Failed to save user");
@@ -94,7 +92,6 @@ export function UserManagementEnhanced() {
     try {
       await deleteDoc(doc(db, "users", id));
       toast.success("User deleted successfully");
-      fetchUsers();
     } catch (error) {
       console.error("Error deleting user:", error);
       toast.error("Failed to delete user");
@@ -105,7 +102,6 @@ export function UserManagementEnhanced() {
     try {
       await updateDoc(doc(db, "users", id), { status: "approved" });
       toast.success("User approved");
-      fetchUsers();
     } catch (error) {
       toast.error("Failed to approve user");
     }
