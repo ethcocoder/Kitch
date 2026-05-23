@@ -9,6 +9,7 @@ import { FinanceManagementEnhanced } from "../components/FinanceManagementEnhanc
 import { DailySalesLog } from "../components/DailySalesLog";
 import { OrderManagement } from "../components/OrderManagement";
 import { FinanceManagement } from "../components/FinanceManagement";
+import { UserManagementEnhanced } from "../components/UserManagementEnhanced";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
@@ -311,95 +312,7 @@ export function AdminDashboardComplete() {
           {activeTab === "finance" && <FinanceManagementEnhanced />}
 
           {/* Users Tab */}
-          {activeTab === "users" && (
-            <div className="space-y-6">
-              <div>
-                <h2 className="text-3xl font-bold text-cyan-400">User Management</h2>
-                <p className="text-slate-400">Manage system users and approvals</p>
-              </div>
-
-              {/* Pending Users */}
-              <Card className="bg-slate-800 border-slate-700">
-                <CardHeader>
-                  <CardTitle className="text-yellow-400">Pending Approvals ({pendingUsers.length})</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {pendingUsers.length === 0 ? (
-                    <p className="text-slate-400">No pending approvals</p>
-                  ) : (
-                    <div className="space-y-3">
-                      {pendingUsers.map((user: any) => (
-                        <div key={user.id} className="bg-slate-700 rounded-lg p-4 flex justify-between items-start">
-                          <div>
-                            <p className="font-semibold text-white">{user.displayName}</p>
-                            <p className="text-slate-400 text-sm">{user.email}</p>
-                            <p className="text-slate-500 text-xs mt-1">Type: {user.userType}</p>
-                          </div>
-                          <div className="flex gap-2">
-                            <Button
-                              onClick={() => handleApproveUser(user.id, user.displayName)}
-                              className="bg-green-500 hover:bg-green-600 text-white"
-                            >
-                              Approve
-                            </Button>
-                            <Button
-                              onClick={() => handleRejectUser(user.id, user.displayName)}
-                              className="bg-red-500 hover:bg-red-600 text-white"
-                            >
-                              Reject
-                            </Button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* Approved Users */}
-              <Card className="bg-slate-800 border-slate-700">
-                <CardHeader>
-                  <CardTitle className="text-green-400">Approved Users ({approvedUsers.length})</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {approvedUsers.length === 0 ? (
-                    <p className="text-slate-400">No approved users</p>
-                  ) : (
-                    <div className="overflow-x-auto">
-                      <table className="w-full">
-                        <thead>
-                          <tr className="border-b border-slate-700">
-                            <th className="text-left py-3 px-4 text-slate-300">Name</th>
-                            <th className="text-left py-3 px-4 text-slate-300">Email</th>
-                            <th className="text-left py-3 px-4 text-slate-300">Role</th>
-                            <th className="text-left py-3 px-4 text-slate-300">Type</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {approvedUsers.map((user: any) => (
-                            <tr key={user.id} className="border-b border-slate-700 hover:bg-slate-700/50">
-                              <td className="py-3 px-4 text-white">{user.displayName}</td>
-                              <td className="py-3 px-4 text-slate-300">{user.email}</td>
-                              <td className="py-3 px-4">
-                                <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
-                                  user.role === "admin"
-                                    ? "bg-purple-500/20 text-purple-400"
-                                    : "bg-blue-500/20 text-blue-400"
-                                }`}>
-                                  {user.role.toUpperCase()}
-                                </span>
-                              </td>
-                              <td className="py-3 px-4 text-slate-300 capitalize">{user.userType}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
-          )}
+          {activeTab === "users" && <UserManagementEnhanced />}
 
           {/* Analytics Tab */}
           {activeTab === "analytics" && (
