@@ -140,7 +140,20 @@ export function FinanceManagement() {
       ]);
     } catch (error) {
       console.error("Error fetching finance data:", error);
-      toast.error("Failed to load finance data");
+      setFinanceData({
+        totalRevenue: 0,
+        totalExpenses: 0,
+        netProfit: 0,
+        completedOrders: 0,
+        pendingPayments: 0,
+        paidOrders: 0,
+        unpaidOrders: 0,
+        partialPayments: 0,
+        monthlyRevenue: [],
+        categoryRevenue: [],
+        paymentBreakdown: { paid: 0, unpaid: 0, partial: 0 },
+      });
+      setExpenses([]);
     } finally {
       setLoading(false);
     }

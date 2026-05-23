@@ -61,7 +61,7 @@ export function OrderManagement() {
       setOrders(ordersList.sort((a, b) => new Date(b.orderDate).getTime() - new Date(a.orderDate).getTime()));
     } catch (error) {
       console.error("Error fetching orders:", error);
-      toast.error("Failed to load orders");
+      setOrders([]);
     } finally {
       setLoading(false);
     }
