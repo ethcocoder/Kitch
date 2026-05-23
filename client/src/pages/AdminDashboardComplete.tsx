@@ -4,6 +4,9 @@ import { doc, getDoc, collection, getDocs, updateDoc } from "firebase/firestore"
 import { db } from "../lib/firebase";
 import { AdminSidebar } from "../components/AdminSidebar";
 import { ProductManagement } from "../components/ProductManagement";
+import { ProductManagementEnhanced } from "../components/ProductManagementEnhanced";
+import { FinanceManagementEnhanced } from "../components/FinanceManagementEnhanced";
+import { DailySalesLog } from "../components/DailySalesLog";
 import { OrderManagement } from "../components/OrderManagement";
 import { FinanceManagement } from "../components/FinanceManagement";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
@@ -296,10 +299,16 @@ export function AdminDashboardComplete() {
           )}
 
           {/* Products Tab */}
-          {activeTab === "products" && <ProductManagement />}
+          {activeTab === "products" && <ProductManagementEnhanced />}
 
           {/* Orders Tab */}
           {activeTab === "orders" && <OrderManagement />}
+
+          {/* Sales Tab */}
+          {activeTab === "sales" && <DailySalesLog />}
+
+          {/* Finance Tab */}
+          {activeTab === "finance" && <FinanceManagementEnhanced />}
 
           {/* Users Tab */}
           {activeTab === "users" && (
