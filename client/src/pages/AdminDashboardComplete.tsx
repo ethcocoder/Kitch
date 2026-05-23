@@ -75,7 +75,15 @@ export function AdminDashboardComplete() {
           });
         } catch (error) {
           console.error("Error fetching data:", error);
-          toast.error("Error loading dashboard");
+          setStats({
+            totalUsers: 0,
+            pendingApprovals: 0,
+            totalRevenue: 0,
+            activeEmployees: 0,
+            totalProducts: 0,
+          });
+          setPendingUsers([]);
+          setApprovedUsers([]);
         } finally {
           setLoading(false);
         }
