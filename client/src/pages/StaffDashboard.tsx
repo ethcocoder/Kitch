@@ -82,9 +82,12 @@ export function StaffDashboard() {
     fetchUserData();
   }, [user]);
 
-  // Load products
+  // Load products and sales data
   useEffect(() => {
-    const unsubscribe = onSnapshot(collection(db, "products"), (snapshot) => {
+    if (!user?.uid) return;
+
+    // Combined listener for products and initial data loading
+    const unsubscribeProducts = onSnapshot(collection(db, "products"), (snapshot) => {
       const productsList = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
@@ -98,15 +101,16 @@ export function StaffDashboard() {
         totalProducts: productsList.length,
         lowStockItems: lowStock,
       }));
+      
+      // Once products are loaded, we can stop the initial loading screen
+      setLoading(false);
+    }, (error) => {
+      console.error("Error loading products:", error);
+      setLoading(false);
     });
 
-    return () => unsubscribe();
-  }, []);
-
-  // Load sales for selected date
-  useEffect(() => {
     const q = query(collection(db, "daily_sales"), where("saleDate", "==", selectedDate));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
+    const unsubscribeSales = onSnapshot(q, (snapshot) => {
       const salesList = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
@@ -121,8 +125,11 @@ export function StaffDashboard() {
       }));
     });
 
-    return () => unsubscribe();
-  }, [selectedDate]);
+    return () => {
+      unsubscribeProducts();
+      unsubscribeSales();
+    };
+  }, [user, selectedDate]);
 
   const handleLogout = async () => {
     try {
