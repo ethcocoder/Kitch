@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { collection, addDoc, updateDoc, deleteDoc, doc, query, where, onSnapshot } from "firebase/firestore";
+import { collection, addDoc, updateDoc, deleteDoc, doc, query, where, onSnapshot, getDocs } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -10,7 +10,7 @@ import { exportDailyReportExcel, exportDailyReportPDF } from "../lib/exportUtils
 
 interface SaleRecord {
   id: string;
-  productId: string;
+  productId: string | number;
   productName: string;
   quantity: number;
   unitPrice: number;
@@ -21,6 +21,7 @@ interface SaleRecord {
   saleDate: string;
   saleTime: any;
   notes?: string;
+  category?: string;
 }
 
 interface DailyStats {
@@ -37,6 +38,7 @@ export function DailySalesLog() {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split("T")[0]);
+  const [products, setProducts] = useState<any[]>([]);
   const [dailyStats, setDailyStats] = useState<DailyStats>({
     date: selectedDate,
     totalItemsSold: 0,
@@ -47,12 +49,31 @@ export function DailySalesLog() {
   });
 
   const [formData, setFormData] = useState({
+    productId: "",
     productName: "",
     quantity: 1,
     unitPrice: 0,
     unitCost: 0,
     notes: "",
+    category: "",
   });
+
+  // Load products on mount
+  useEffect(() => {
+    const loadProducts = async () => {
+      try {
+        const productsSnapshot = await getDocs(collection(db, "products"));
+        const productsList = productsSnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setProducts(productsList);
+      } catch (error) {
+        console.error("Error loading products:", error);
+      }
+    };
+    loadProducts();
+  }, []);
 
   useEffect(() => {
     const salesRef = collection(db, "daily_sales");
@@ -91,37 +112,59 @@ export function DailySalesLog() {
   const handleAddSale = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.productName || formData.quantity <= 0 || formData.unitPrice <= 0) {
-      toast.error("Please fill in all required fields");
+    if (!formData.productId || formData.quantity <= 0 || formData.unitPrice <= 0) {
+      toast.error("Please select a product and fill in all required fields");
       return;
     }
 
     try {
+      const selectedProduct = products.find((p) => p.id === formData.productId);
+      if (!selectedProduct) {
+        toast.error("Product not found");
+        return;
+      }
+
       const totalAmount = formData.quantity * formData.unitPrice;
       const totalCost = formData.quantity * formData.unitCost;
       const profit = totalAmount - totalCost;
 
+      // Record the sale
       await addDoc(collection(db, "daily_sales"), {
-        productId: `prod_${Date.now()}`,
-        productName: formData.productName,
+        productId: formData.productId,
+        productName: selectedProduct.name,
         quantity: formData.quantity,
         unitPrice: formData.unitPrice,
         unitCost: formData.unitCost,
         totalAmount: totalAmount,
         totalCost: totalCost,
         profit: profit,
+        category: selectedProduct.category,
         saleDate: selectedDate,
         saleTime: new Date(),
         notes: formData.notes,
       });
 
+      // Update product stock and totals
+      const newStock = selectedProduct.stock - formData.quantity;
+      const newTotalSold = (selectedProduct.totalSold || 0) + formData.quantity;
+      const newTotalProfit = (selectedProduct.totalProfit || 0) + profit;
+
+      await updateDoc(doc(db, "products", formData.productId), {
+        stock: Math.max(0, newStock),
+        totalSold: newTotalSold,
+        totalProfit: newTotalProfit,
+        updatedAt: new Date(),
+      });
+
       toast.success("Sale recorded successfully");
       setFormData({
+        productId: "",
         productName: "",
         quantity: 1,
         unitPrice: 0,
         unitCost: 0,
         notes: "",
+        category: "",
       });
       setShowForm(false);
     } catch (error) {
@@ -289,15 +332,32 @@ export function DailySalesLog() {
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-slate-300 text-sm font-medium mb-2">
-                    Product Name *
+                    Product *
                   </label>
-                  <Input
-                    type="text"
-                    placeholder="Enter product name"
-                    value={formData.productName}
-                    onChange={(e) => setFormData({ ...formData, productName: e.target.value })}
-                    className="bg-slate-700 border-slate-600 text-white"
-                  />
+                  <select
+                    value={formData.productId}
+                    onChange={(e) => {
+                      const selected = products.find((p) => p.id === e.target.value);
+                      if (selected) {
+                        setFormData({
+                          ...formData,
+                          productId: e.target.value,
+                          productName: selected.name,
+                          unitPrice: selected.price,
+                          unitCost: selected.cost || 0,
+                          category: selected.category,
+                        });
+                      }
+                    }}
+                    className="w-full bg-slate-700 border-2 border-slate-600 text-white rounded-lg py-2 px-4 focus:border-cyan-500 focus:outline-none"
+                  >
+                    <option value="">Select a product</option>
+                    {products.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.name} (Stock: {p.stock})
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
                 <div>
@@ -323,6 +383,7 @@ export function DailySalesLog() {
                     value={formData.unitPrice}
                     onChange={(e) => setFormData({ ...formData, unitPrice: parseFloat(e.target.value) || 0 })}
                     className="bg-slate-700 border-slate-600 text-white"
+                    readOnly={!!formData.productId}
                   />
                 </div>
 
@@ -336,6 +397,7 @@ export function DailySalesLog() {
                     value={formData.unitCost}
                     onChange={(e) => setFormData({ ...formData, unitCost: parseFloat(e.target.value) || 0 })}
                     className="bg-slate-700 border-slate-600 text-white"
+                    readOnly={!!formData.productId}
                   />
                 </div>
               </div>
@@ -371,6 +433,14 @@ export function DailySalesLog() {
                         %
                       </p>
                     </div>
+                    {formData.productId && (
+                      <div>
+                        <p className="text-slate-400 text-sm">Available Stock</p>
+                        <p className="text-xl font-bold text-blue-400">
+                          {products.find((p) => p.id === formData.productId)?.stock || 0}
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}

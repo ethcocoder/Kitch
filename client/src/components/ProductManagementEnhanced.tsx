@@ -74,16 +74,16 @@ export function ProductManagementEnhanced() {
           ...formData,
           updatedAt: new Date(),
         });
-        toast.success("Product updated successfully");
+        toast.success("Product updated successfully. Changes will sync with sales.");
       } else {
-        // Add new product
+        // Add new product - will appear in Daily Sales dropdown
         await addDoc(collection(db, "products"), {
           ...formData,
           totalSold: 0,
           totalProfit: 0,
           createdAt: new Date(),
         });
-        toast.success("Product added successfully");
+        toast.success("Product added! It will now appear in Daily Sales.");
       }
 
       setFormData({

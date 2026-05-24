@@ -14,6 +14,7 @@ import { UserDashboardNew } from "./pages/UserDashboardNew";
 import { ApprovalWaiting } from "./pages/ApprovalWaiting";
 import { AdminPromotion } from "./pages/AdminPromotion";
 import { AdminCleanup } from "./pages/AdminCleanup";
+import { StaffDashboard } from "./pages/StaffDashboard";
 import { AuthProvider } from "./context/AuthContext";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { useAuth } from "./_core/hooks/useAuth";
@@ -43,8 +44,9 @@ function Router() {
       <Route path={"/admin-cleanup"} component={AdminCleanup} />
       <Route path={"/admin-dashboard"} component={AdminDashboardComplete} />
       <Route path={"/user-dashboard"} component={UserDashboardNew} />
-      <Route path={"/dashboard"} component={() => <ProtectedRoute><UserDashboardNew /></ProtectedRoute>} />
-      <Route path={"/admin"} component={() => <ProtectedAdminRoute component={AdminDashboard} />} />
+      <Route path={"/staff-dashboard"} component={StaffDashboard} />
+      <Route path={"/dashboard"} component={() => <ProtectedRoute><StaffDashboard /></ProtectedRoute>} />
+      <Route path={"/admin"} component={() => <ProtectedAdminRoute component={AdminDashboardComplete} />} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />
