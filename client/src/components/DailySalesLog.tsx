@@ -383,7 +383,6 @@ export function DailySalesLog() {
                     value={formData.unitPrice}
                     onChange={(e) => setFormData({ ...formData, unitPrice: parseFloat(e.target.value) || 0 })}
                     className="bg-slate-700 border-slate-600 text-white"
-                    readOnly={!!formData.productId}
                   />
                 </div>
 
@@ -397,7 +396,6 @@ export function DailySalesLog() {
                     value={formData.unitCost}
                     onChange={(e) => setFormData({ ...formData, unitCost: parseFloat(e.target.value) || 0 })}
                     className="bg-slate-700 border-slate-600 text-white"
-                    readOnly={!!formData.productId}
                   />
                 </div>
               </div>
