@@ -35,7 +35,7 @@ service cloud.firestore {
       allow write: if isAdmin() || (isAuthenticated() && isApproved());
     }
 
-    // Employees collection - read by admin, write by admin
+    // Employees collection - read and write by admin
     match /employees/{employeeId} {
       allow read: if isAdmin();
       allow write: if isAdmin();
