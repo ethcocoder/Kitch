@@ -19,6 +19,7 @@ interface Product {
   totalSold: number;
   totalProfit: number;
   imageUrl?: string;
+  status?: "pending" | "approved" | "rejected";
   createdAt?: any;
 }
 
@@ -121,6 +122,30 @@ export function ProductManagementEnhanced() {
     }
   };
 
+  const handleApproveProduct = async (id: string) => {
+    try {
+      await updateDoc(doc(db, "products", id), {
+        status: "approved",
+        updatedAt: new Date(),
+      });
+      toast.success("Product approved!");
+    } catch (error) {
+      toast.error("Error approving product");
+    }
+  };
+
+  const handleRejectProduct = async (id: string) => {
+    try {
+      await updateDoc(doc(db, "products", id), {
+        status: "rejected",
+        updatedAt: new Date(),
+      });
+      toast.success("Product rejected!");
+    } catch (error) {
+      toast.error("Error rejecting product");
+    }
+  };
+
   const handleCancel = () => {
     setShowForm(false);
     setEditingId(null);
@@ -171,8 +196,48 @@ export function ProductManagementEnhanced() {
     );
   }
 
+  const pendingProducts = products.filter(p => p.status === "pending");
+
   return (
     <div className="space-y-6">
+      {/* Pending Approvals Card */}
+      {pendingProducts.length > 0 && (
+        <Card className="bg-slate-800 border-yellow-500/50">
+          <CardHeader>
+            <CardTitle className="text-yellow-400 text-lg flex items-center gap-2">
+              <Plus className="w-5 h-5" />
+              Pending Product Approvals
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {pendingProducts.map((p) => (
+                <div key={p.id} className="bg-slate-700/50 rounded-lg p-3 flex justify-between items-center border border-slate-600">
+                  <div className="min-w-0">
+                    <p className="font-semibold text-white truncate text-sm">{p.name}</p>
+                    <p className="text-slate-400 text-xs truncate">{p.category} - {p.price} ETB</p>
+                  </div>
+                  <div className="flex gap-2 shrink-0">
+                    <Button
+                      onClick={() => handleApproveProduct(p.id)}
+                      className="bg-green-500 hover:bg-green-600 text-white p-1.5 h-8 rounded-lg transition-colors"
+                    >
+                      Approve
+                    </Button>
+                    <Button
+                      onClick={() => handleRejectProduct(p.id)}
+                      className="bg-red-500 hover:bg-red-600 text-white p-1.5 h-8 rounded-lg transition-colors"
+                    >
+                      Reject
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div className="min-w-0">
@@ -337,6 +402,7 @@ export function ProductManagementEnhanced() {
                   <th className="text-left py-3 px-4 text-slate-300 font-semibold">Stock</th>
                   <th className="text-left py-3 px-4 text-slate-300 font-semibold hidden md:table-cell">Sold</th>
                   <th className="text-left py-3 px-4 text-slate-300 font-semibold hidden lg:table-cell">Profit</th>
+                  <th className="text-left py-3 px-4 text-slate-300 font-semibold">Status</th>
                   <th className="text-left py-3 px-4 text-slate-300 font-semibold">Actions</th>
                 </tr>
               </thead>
@@ -363,6 +429,15 @@ export function ProductManagementEnhanced() {
                           product.stock < 5 ? "bg-red-500/20 text-red-400" : "bg-blue-500/20 text-blue-400"
                         }`}>
                           {product.stock}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4">
+                        <span className={`px-2 py-1 rounded text-[10px] font-bold uppercase ${
+                          product.status === "approved" ? "bg-green-500/20 text-green-400" : 
+                          product.status === "rejected" ? "bg-red-500/20 text-red-400" : 
+                          "bg-yellow-500/20 text-yellow-400"
+                        }`}>
+                          {product.status || "approved"}
                         </span>
                       </td>
                       <td className="py-3 px-4 hidden md:table-cell text-yellow-400 font-bold">{product.totalSold || 0}</td>

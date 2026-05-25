@@ -182,13 +182,7 @@ export function StaffDashboard() {
         </button>
       </div>
 
-        {/* Sidebar Overlay for Mobile */}
-      {sidebarOpen && (
-        <div 
-          className="lg:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-[50]"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
+        {/* Sidebar Overlay for Mobile removed as requested */}
 
       <style>{`
         nav::-webkit-scrollbar {

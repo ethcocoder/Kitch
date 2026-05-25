@@ -20,6 +20,7 @@ interface Product {
   totalSold: number;
   totalProfit: number;
   imageUrl?: string;
+  status?: "pending" | "approved" | "rejected";
   createdAt?: any;
 }
 
@@ -102,22 +103,23 @@ export function StaffProductManagement() {
         
         toast.success("Product updated and reported to admin");
       } else {
-        // Add new product
+        // Add new product with pending status
         const docRef = await addDoc(collection(db, "products"), {
           ...formData,
           totalSold: 0,
           totalProfit: 0,
+          status: "pending",
           createdAt: new Date(),
         });
 
-        await sendAutoReport("added_product", {
+        await sendAutoReport("added_product_pending", {
           productId: docRef.id,
           productName: formData.name,
           initialStock: formData.stock,
           price: formData.price
         });
 
-        toast.success("Product added and reported to admin");
+        toast.success("Product submitted for admin approval");
       }
 
       setFormData({
@@ -435,6 +437,7 @@ export function StaffProductManagement() {
                   <th className="text-left py-3 px-4 text-slate-300 font-semibold">Price</th>
                   <th className="text-left py-3 px-4 text-slate-300 font-semibold">Stock</th>
                   <th className="text-left py-3 px-4 text-slate-300 font-semibold hidden md:table-cell">Sold</th>
+                  <th className="text-left py-3 px-4 text-slate-300 font-semibold">Status</th>
                   <th className="text-left py-3 px-4 text-slate-300 font-semibold">Actions</th>
                 </tr>
               </thead>
@@ -468,6 +471,15 @@ export function StaffProductManagement() {
                       </td>
                       <td className="py-3 px-4 text-purple-400 font-bold hidden md:table-cell">
                         {product.totalSold || 0}
+                      </td>
+                      <td className="py-3 px-4">
+                        <span className={`px-2 py-1 rounded text-[10px] font-bold uppercase ${
+                          product.status === "approved" ? "bg-green-500/20 text-green-400" : 
+                          product.status === "rejected" ? "bg-red-500/20 text-red-400" : 
+                          "bg-yellow-500/20 text-yellow-400"
+                        }`}>
+                          {product.status || "approved"}
+                        </span>
                       </td>
                       <td className="py-3 px-4 flex gap-1 md:gap-2">
                         <button
