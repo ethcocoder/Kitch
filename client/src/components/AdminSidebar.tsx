@@ -90,8 +90,8 @@ export function AdminSidebar({ activeTab, onTabChange }: SidebarProps) {
 
       {/* Sidebar */}
       <div
-        className={`fixed lg:static inset-y-0 left-0 w-64 bg-slate-900 border-r border-slate-800 z-[55] transform transition-transform duration-300 ease-in-out ${
-          sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+        className={`fixed md:static top-0 left-0 h-screen w-64 bg-slate-900 border-r border-slate-800 flex flex-col transition-transform duration-300 z-40 admin-sidebar ${
+          mobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         }`}
       >
         <div className="h-full flex flex-col p-6">
@@ -105,7 +105,10 @@ export function AdminSidebar({ activeTab, onTabChange }: SidebarProps) {
           </div>
 
           {/* Menu Items */}
-          <nav className="flex-1 space-y-2 overflow-y-auto custom-scrollbar pr-2">
+          <nav className="flex-1 space-y-2 overflow-y-auto pr-2 custom-scrollbar" style={{
+            scrollbarWidth: 'thin',
+            scrollbarColor: 'rgba(100, 116, 139, 0.5) transparent'
+          }}>
             {menuItems.map((item) => (
               <button
                 key={item.id}
@@ -142,6 +145,22 @@ export function AdminSidebar({ activeTab, onTabChange }: SidebarProps) {
           </div>
         </div>
       </div>
+
+      <style>{`
+        .admin-sidebar nav::-webkit-scrollbar {
+          width: 6px;
+        }
+        .admin-sidebar nav::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .admin-sidebar nav::-webkit-scrollbar-thumb {
+          background: rgba(100, 116, 139, 0.5);
+          border-radius: 3px;
+        }
+        .admin-sidebar nav::-webkit-scrollbar-thumb:hover {
+          background: rgba(100, 116, 139, 0.7);
+        }
+      `}</style>
     </>
   );
 }

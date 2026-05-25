@@ -182,13 +182,29 @@ export function StaffDashboard() {
         </button>
       </div>
 
-      {/* Sidebar Overlay for Mobile */}
+        {/* Sidebar Overlay for Mobile */}
       {sidebarOpen && (
         <div 
           className="lg:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-[50]"
           onClick={() => setSidebarOpen(false)}
         />
       )}
+
+      <style>{`
+        nav::-webkit-scrollbar {
+          width: 6px;
+        }
+        nav::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        nav::-webkit-scrollbar-thumb {
+          background: rgba(100, 116, 139, 0.5);
+          border-radius: 3px;
+        }
+        nav::-webkit-scrollbar-thumb:hover {
+          background: rgba(100, 116, 139, 0.7);
+        }
+      `}</style>
 
       {/* Sidebar */}
       <div
@@ -202,7 +218,10 @@ export function StaffDashboard() {
             <p className="text-slate-400 text-sm">Dashboard</p>
           </div>
 
-          <nav className="flex-1 space-y-2">
+          <nav className="flex-1 space-y-2 overflow-y-auto pr-2" style={{
+            scrollbarWidth: 'thin',
+            scrollbarColor: 'rgba(100, 116, 139, 0.5) transparent'
+          }}>
             {navItems.map((item) => (
               <button
                 key={item.id}
@@ -222,7 +241,7 @@ export function StaffDashboard() {
             ))}
           </nav>
 
-          <div className="pt-6 border-t border-slate-800">
+          <div className="pt-6 border-t border-slate-800 mt-auto">
             <div className="mb-4 px-2">
               <p className="text-slate-400 text-xs uppercase tracking-wider mb-1">Staff Member</p>
               <p className="text-white font-semibold truncate">{user?.displayName || user?.email}</p>
