@@ -269,40 +269,6 @@ export function ProductManagementEnhanced() {
         </div>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4">
-        <Card className="bg-slate-800 border-slate-700">
-          <CardContent className="pt-4 md:pt-6">
-            <p className="text-slate-400 text-xs md:text-sm">Total Products</p>
-            <p className="text-2xl md:text-3xl font-bold text-cyan-400">{stats.totalProducts}</p>
-          </CardContent>
-        </Card>
-        <Card className="bg-slate-800 border-slate-700">
-          <CardContent className="pt-4 md:pt-6">
-            <p className="text-slate-400 text-xs md:text-sm">Total Stock</p>
-            <p className="text-2xl md:text-3xl font-bold text-blue-400">{stats.totalStock}</p>
-          </CardContent>
-        </Card>
-        <Card className="bg-slate-800 border-slate-700">
-          <CardContent className="pt-4 md:pt-6">
-            <p className="text-slate-400 text-xs md:text-sm">Total Sold</p>
-            <p className="text-2xl md:text-3xl font-bold text-green-400">{stats.totalSold}</p>
-          </CardContent>
-        </Card>
-        <Card className="bg-slate-800 border-slate-700">
-          <CardContent className="pt-4 md:pt-6">
-            <p className="text-slate-400 text-xs md:text-sm">Revenue</p>
-            <p className="text-2xl md:text-3xl font-bold text-yellow-400">{stats.totalRevenue.toFixed(0)} ETB</p>
-          </CardContent>
-        </Card>
-        <Card className="bg-slate-800 border-slate-700 col-span-2 md:col-span-1">
-          <CardContent className="pt-4 md:pt-6">
-            <p className="text-slate-400 text-xs md:text-sm">Total Profit</p>
-            <p className="text-2xl md:text-3xl font-bold text-purple-400">{stats.totalProfit.toFixed(0)} ETB</p>
-          </CardContent>
-        </Card>
-      </div>
-
       {/* Add Product Form */}
       {showForm && (
         <Card className="bg-slate-800 border-slate-700 animate-in fade-in slide-in-from-top-4 duration-300">
@@ -466,6 +432,40 @@ export function ProductManagementEnhanced() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Stats Grid */}
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4">
+        <Card className="bg-slate-800 border-slate-700">
+          <CardContent className="pt-4 md:pt-6">
+            <p className="text-slate-400 text-xs md:text-sm">Total Products</p>
+            <p className="text-2xl md:text-3xl font-bold text-cyan-400">{stats.totalProducts}</p>
+          </CardContent>
+        </Card>
+        <Card className="bg-slate-800 border-slate-700">
+          <CardContent className="pt-4 md:pt-6">
+            <p className="text-slate-400 text-xs md:text-sm">Total Stock</p>
+            <p className="text-2xl md:text-3xl font-bold text-blue-400">{stats.totalStock}</p>
+          </CardContent>
+        </Card>
+        <Card className="bg-slate-800 border-slate-700">
+          <CardContent className="pt-4 md:pt-6">
+            <p className="text-slate-400 text-xs md:text-sm">Total Sold</p>
+            <p className="text-2xl md:text-3xl font-bold text-green-400">{stats.totalSold}</p>
+          </CardContent>
+        </Card>
+        <Card className="bg-slate-800 border-slate-700">
+          <CardContent className="pt-4 md:pt-6">
+            <p className="text-slate-400 text-xs md:text-sm">Revenue</p>
+            <p className="text-2xl md:text-3xl font-bold text-yellow-400">{stats.totalRevenue.toFixed(0)} ETB</p>
+          </CardContent>
+        </Card>
+        <Card className="bg-slate-800 border-slate-700 col-span-2 md:col-span-1">
+          <CardContent className="pt-4 md:pt-6">
+            <p className="text-slate-400 text-xs md:text-sm">Total Profit</p>
+            <p className="text-2xl md:text-3xl font-bold text-purple-400">{stats.totalProfit.toFixed(0)} ETB</p>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
