@@ -397,6 +397,8 @@ export function ProductManagementEnhanced() {
                           {product.stock}
                         </span>
                       </td>
+                      <td className="py-3 px-4 hidden md:table-cell text-yellow-400 font-bold">{product.totalSold || 0}</td>
+                      <td className="py-3 px-4 hidden lg:table-cell text-purple-400 font-bold">{(product.totalProfit || 0).toFixed(0)} ETB</td>
                       <td className="py-3 px-4">
                         <span className={`px-2 py-1 rounded text-[10px] font-bold uppercase ${
                           product.status === "approved" ? "bg-green-500/20 text-green-400" : 
@@ -406,8 +408,6 @@ export function ProductManagementEnhanced() {
                           {product.status || "approved"}
                         </span>
                       </td>
-                      <td className="py-3 px-4 hidden md:table-cell text-yellow-400 font-bold">{product.totalSold || 0}</td>
-                      <td className="py-3 px-4 hidden lg:table-cell text-purple-400 font-bold">{(product.totalProfit || 0).toFixed(0)} ETB</td>
                       <td className="py-3 px-4">
                         <div className="flex gap-1 md:gap-2">
                           <button
