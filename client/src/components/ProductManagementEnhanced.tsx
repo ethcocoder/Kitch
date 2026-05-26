@@ -407,7 +407,7 @@ export function ProductManagementEnhanced() {
                 </tr>
               </thead>
               <tbody>
-                products.length === 0 ? (
+                {products.length === 0 ? (
                   <tr>
                     <td colSpan={8} className="py-8 text-center text-slate-400">
                       No products yet. Add your first product!
