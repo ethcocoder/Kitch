@@ -459,7 +459,7 @@ export function ProductManagementEnhanced() {
                         </div>
                       </td>
                     </tr>
-                  )))
+                  ))
                 )}
               </tbody>
             </table>
