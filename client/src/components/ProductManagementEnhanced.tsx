@@ -407,6 +407,13 @@ export function ProductManagementEnhanced() {
                 </tr>
               </thead>
               <tbody>
+                products.length === 0 ? (
+                  <tr>
+                    <td colSpan={8} className="py-8 text-center text-slate-400">
+                      No products yet. Add your first product!
+                    </td>
+                  </tr>
+                ) : (
                   products.map((product) => (
                     <tr key={product.id} className="border-b border-slate-700 hover:bg-slate-700/50">
                       <td className="py-3 px-4">
@@ -452,7 +459,7 @@ export function ProductManagementEnhanced() {
                         </div>
                       </td>
                     </tr>
-                  ))
+                  )))
                 )}
               </tbody>
             </table>
